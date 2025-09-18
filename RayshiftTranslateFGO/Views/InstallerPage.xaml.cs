@@ -237,10 +237,47 @@ namespace RayshiftTranslateFGO.Views
                         ? $"files/data/d713/{_assetList}"
                         : $"{instance.Path}/files/data/d713/{_assetList}";
 
-                    var assetStorage = await _cm.GetFileContents(
-                        _accessMode,
-                        filePath, instance.Path);
+                    FileContentsResult assetStorage;
+                    try
+                    {
+                        assetStorage = await _cm.GetFileContents(
+                            _accessMode,
+                            filePath, instance.Path);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (_accessMode == ContentType.DirectAccess && ex.Message.Contains(_assetList))
+                        {
+                            if (Preferences.Get("IsAccessUpgraded", 0) == 1)
+                            {
+                                // Can't access file so require Shizuku
+                                if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.O) // api 26
+                                {
+                                    MessagingCenter.Send(Xamarin.Forms.Application.Current, "installer_page_goto_shizuku");
+                                }
+                                else
+                                {
+                                    if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.N)
+                                    {
+                                        MessagingCenter.Send(Xamarin.Forms.Application.Current, "installer_page_goto_pre_initialize");
+                                    }
+                                    else
+                                    {
+                                        var intentService = DependencyService.Get<IIntentService>();
+                                        intentService.MakeToast(AppResources.TooLowAndroidVersion);
+                                    }
+                                }
 
+                                LoadingText.Text = "Shizuku or SAF setup may be required on this device.";
+                                SwitchErrorObjects(true);
+                                return;
+                            }
+
+                            
+                        }
+                        SwitchErrorObjects(true);
+                        throw;
+                    }
 
                     if (!assetStorage.Successful)
                     {
