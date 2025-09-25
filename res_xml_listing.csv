@@ -1,0 +1,8 @@
+res_xml
+res/xml/image_share_filepaths.xml
+res/xml/standalone_badge.xml
+res/xml/standalone_badge_gravity_bottom_end.xml
+res/xml/standalone_badge_gravity_bottom_start.xml
+res/xml/standalone_badge_gravity_top_start.xml
+res/xml/standalone_badge_offset.xml
+res/xml/xamarin_essentials_fileprovider_file_paths.xml
