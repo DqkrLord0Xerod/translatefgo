@@ -1,0 +1,217 @@
+{
+  "remove": [],
+  "edit_shared": [
+    {
+      "path": "README.md",
+      "sections": [
+        {
+          "line_start": 4,
+          "line_end": 4,
+          "description": "Trim the North American support reference from the project overview blurb."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO.Android/RayshiftFirebaseMessageService.cs",
+      "sections": [
+        {
+          "line_start": 53,
+          "line_end": 82,
+          "description": "Remove the NA auto-update branch, including the FGORegion.Na preferences key and related worker scheduling."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO.Android/Services/ContentManager.cs",
+      "sections": [
+        {
+          "line_start": 470,
+          "line_end": 505,
+          "description": "Stop detecting .en package directories and assigning FGORegion.Na when enumerating direct-access installs."
+        },
+        {
+          "line_start": 512,
+          "line_end": 548,
+          "description": "Drop NA handling when scanning storage framework locations for installed packages."
+        },
+        {
+          "line_start": 566,
+          "line_end": 610,
+          "description": "Remove Shizuku directory discovery logic that maps .en titles to FGORegion.Na."
+        },
+        {
+          "line_start": 612,
+          "line_end": 650,
+          "description": "Eliminate the fallback manual check that appends FGORegion.Na entries for .en packages."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO.Android/Services/ScriptManager.cs",
+      "sections": [
+        {
+          "line_start": 260,
+          "line_end": 268,
+          "description": "Collapse the checksum preference selection so it no longer references NAArtChecksums."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/AppResources.Designer.cs",
+      "sections": [
+        {
+          "line_start": 960,
+          "line_end": 976,
+          "description": "Delete the NAArtName and NAInstaller resource accessors."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/AppResources.resx",
+      "sections": [
+        {
+          "line_start": 443,
+          "line_end": 447,
+          "description": "Remove the NAArtName and NAInstaller string resources from the default locale file."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/AppResources.es.resx",
+      "sections": [
+        {
+          "line_start": 418,
+          "line_end": 422,
+          "description": "Strip the NAArtName and NAInstaller entries from the Spanish localization."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/AppResources.fr.resx",
+      "sections": [
+        {
+          "line_start": 420,
+          "line_end": 424,
+          "description": "Remove the French NAArtName and NAInstaller resources."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/AppResources.id.resx",
+      "sections": [
+        {
+          "line_start": 420,
+          "line_end": 424,
+          "description": "Delete the Indonesian NAArtName and NAInstaller values."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/AppResources.it.resx",
+      "sections": [
+        {
+          "line_start": 443,
+          "line_end": 447,
+          "description": "Remove the Italian NAArtName and NAInstaller resources."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/AppResources.pt-BR.resx",
+      "sections": [
+        {
+          "line_start": 420,
+          "line_end": 424,
+          "description": "Strip the Brazilian Portuguese NAArtName and NAInstaller resource strings."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/AppResources.zh-Hans.resx",
+      "sections": [
+        {
+          "line_start": 420,
+          "line_end": 424,
+          "description": "Remove the Simplified Chinese NAArtName and NAInstaller definitions."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/Services/IContentManager.cs",
+      "sections": [
+        {
+          "line_start": 85,
+          "line_end": 104,
+          "description": "Update the FGORegion enum so it no longer exposes the Na flag."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/Services/RestfulAPI.cs",
+      "sections": [
+        {
+          "line_start": 112,
+          "line_end": 135,
+          "description": "Adjust the art API request helper to drop the assetStorageNA argument and payload field."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/Util/AppNames.cs",
+      "sections": [
+        {
+          "line_start": 8,
+          "line_end": 20,
+          "description": "Remove the NA package identifiers and descriptions from the valid app lists."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/Views/ArtPage.xaml.cs",
+      "sections": [
+        {
+          "line_start": 113,
+          "line_end": 428,
+          "description": "Prune all branches, preferences, and data bindings tied to FGORegion.Na art handling."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/Views/InstallerPage.xaml.cs",
+      "sections": [
+        {
+          "line_start": 65,
+          "line_end": 223,
+          "description": "Remove the NA installer messaging subscriptions and related comments."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/Views/MainPage.xaml",
+      "sections": [
+        {
+          "line_start": 24,
+          "line_end": 24,
+          "description": "Drop the NA navigation tab."
+        }
+      ]
+    },
+    {
+      "path": "RayshiftTranslateFGO/Views/MainPage.xaml.cs",
+      "sections": [
+        {
+          "line_start": 117,
+          "line_end": 124,
+          "description": "Remove NA tab activation logic and MessagingCenter notifications."
+        }
+      ]
+    }
+  ],
+  "keep": [
+    "RayshiftTranslateFGO/Services/ICacheProvider.cs",
+    "RayshiftTranslateFGO/Services/IIntentService.cs",
+    "RayshiftTranslateFGO/Services/IScriptManager.cs",
+    "scripts_generate_classification.py",
+    "tfgo_agent_bundle.zip"
+  ]
+}
