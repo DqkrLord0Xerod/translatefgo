@@ -109,7 +109,7 @@ namespace RayshiftTranslateFGO.Services
             return await ExecuteAsync<HandshakeAPIResponse>(request);
         }
 
-        public async Task<IRestResponse<ArtAPIResponse>> GetArtAPIResponse(string assetStorageJP, string assetStorageNA)
+        public async Task<IRestResponse<ArtAPIResponse>> GetArtAPIResponse(string assetStorageJP)
         {
             if (EndpointURL.NeedsRefresh)
             {
@@ -128,10 +128,6 @@ namespace RayshiftTranslateFGO.Services
             if (!string.IsNullOrWhiteSpace(assetStorageJP))
             {
                 sendObject.Add("assetstoragejp", assetStorageJP);
-            }
-            if (!string.IsNullOrWhiteSpace(assetStorageNA))
-            {
-                sendObject.Add("assetstoragena", assetStorageNA);
             }
 
             if (Guid.TryParse(Preferences.Get(EndpointURL.GetLinkedAccountKey(), null), out var userToken))

@@ -114,11 +114,7 @@ namespace RayshiftTranslateFGO.Views
         {
             var title = ((TabbedPage)sender).CurrentPage?.Title;
 
-            if (title == UIFunctions.GetResourceString("NAInstaller"))
-            {
-                MessagingCenter.Send(Xamarin.Forms.Application.Current, "na_initial_load");
-            }
-            else if (title == UIFunctions.GetResourceString("JPInstaller"))
+            if (title == UIFunctions.GetResourceString("JPInstaller"))
             {
                 MessagingCenter.Send(Xamarin.Forms.Application.Current, "jp_initial_load");
             }
@@ -154,8 +150,6 @@ namespace RayshiftTranslateFGO.Views
             Navigation.InsertPageBefore(new SetupPage(), this); // tuck under the update page
             await Navigation.PopToRootAsync(true);
         }
-        private Dictionary<string, FGORegion> _appsInstalled { get; set; }
-
         private async Task UpdateCheck()
         {
             var rest = new RestfulAPI();
@@ -290,7 +284,10 @@ namespace RayshiftTranslateFGO.Views
             if (_artPageIsAdded)
             {
                 _artPageIsAdded = false;
-                tabbedPage.Children.RemoveAt(2);
+                if (tabbedPage.Children.Contains(ArtNavigationPage))
+                {
+                    tabbedPage.Children.Remove(ArtNavigationPage);
+                }
             }
         }
 
@@ -301,7 +298,10 @@ namespace RayshiftTranslateFGO.Views
             {
                 _artPageIsAdded = true;
                 ArtPageRef.Title = AppResources.CustomArtTab; // don't know why this is needed but ok
-                tabbedPage.Children.Insert(2, ArtPageRef);
+                if (!tabbedPage.Children.Contains(ArtNavigationPage))
+                {
+                    tabbedPage.Children.Insert(1, ArtNavigationPage);
+                }
                 //CustomArtTabPage.Title = AppResources.CustomArtTab;
                 OnPropertyChanged();
             }

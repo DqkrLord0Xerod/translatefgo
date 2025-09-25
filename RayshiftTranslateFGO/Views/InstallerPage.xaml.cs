@@ -55,6 +55,10 @@ namespace RayshiftTranslateFGO.Views
         public InstallerPage(Int32 region)
         {
             Region = (FGORegion)region;
+            if (Region != FGORegion.Jp)
+            {
+                throw new ArgumentOutOfRangeException(nameof(region), "Only the JP region is supported.");
+            }
             _cm = DependencyService.Get<IContentManager>();
             _sm =  DependencyService.Get<IScriptManager>();
             _im = DependencyService.Get<IIntentService>();
@@ -62,7 +66,7 @@ namespace RayshiftTranslateFGO.Views
             InitializeComponent();
             BindingContext = this;
 
-            //TranslationName.Text = Region == FGORegion.Jp ? String.Format(AppResources.InstallerTitle, "JP") : String.Format(AppResources.InstallerTitle, "NA");
+            //TranslationName.Text = String.Format(AppResources.InstallerTitle, "JP");
 
             RetryButton.Clicked += UpdateTranslationListClick;
             RefreshButton.Clicked += UpdateTranslationListClick;
@@ -85,33 +89,17 @@ namespace RayshiftTranslateFGO.Views
         /// </summary>
         protected override async void OnAppearing()
         {
-            switch (Region)
+            MessagingCenter.Subscribe<Application>(Xamarin.Forms.Application.Current, "jp_initial_load", async (sender) =>
             {
-                case FGORegion.Jp:
-                    MessagingCenter.Subscribe<Application>(Xamarin.Forms.Application.Current, "jp_initial_load", async (sender) =>
-                    {
-                        await InitialLoad();
-                    });
-                    break;
-                case FGORegion.Na:
-                    MessagingCenter.Subscribe<Application>(Xamarin.Forms.Application.Current, "na_initial_load", async (sender) =>
-                    {
-                        await InitialLoad();
-                    });
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                await InitialLoad();
+            });
 
             MessagingCenter.Subscribe<Application>(Xamarin.Forms.Application.Current, "reset_initial_load", async (sender) =>
             {
                 _pageOpened = false;
             });
 
-            if (Region == FGORegion.Jp)
-            {
-                await InitialLoad();
-            }
+            await InitialLoad();
         }
 
         public async Task InitialLoad()
@@ -218,9 +206,7 @@ namespace RayshiftTranslateFGO.Views
                 _installedFgoInstances = _cm.GetInstalledGameApps(_accessMode, _storageLocations);
 
 
-                //TranslationName.Text = Region == FGORegion.Jp
-                //? String.Format(AppResources.InstallerTitle, "JP") + $": {handshake.Data.Response.AppVer}"
-                //: String.Format(AppResources.InstallerTitle, "NA") + $": {handshake.Data.Response.AppVer}";
+                //TranslationName.Text = String.Format(AppResources.InstallerTitle, "JP") + $": {handshake.Data.Response.AppVer}";
 
                 // Check region is installed
                 if (_installedFgoInstances.All(w => w.Region != Region))

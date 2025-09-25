@@ -41,15 +41,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="AppResources.pt-BR.resx">
-      <SubType>Designer</SubType>
-      <LastGenOutput>AppResources.pt-BR.Designer.cs</LastGenOutput>
-      <Generator>ResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="AppResources.es.resx">
-      <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
-      <Generator>ResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
     <EmbeddedResource Update="AppResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>AppResources.Designer.cs</LastGenOutput>

@@ -959,24 +959,6 @@ namespace RayshiftTranslateFGO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Custom Art (NA).
-        /// </summary>
-        internal static string NAArtName {
-            get {
-                return ResourceManager.GetString("NAArtName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to FGO NA.
-        /// </summary>
-        internal static string NAInstaller {
-            get {
-                return ResourceManager.GetString("NAInstaller", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to No.
         /// </summary>
         internal static string No {

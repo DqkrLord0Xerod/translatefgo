@@ -440,12 +440,6 @@ Do you want to continue?</value>
   <data name="LoginPrompt" xml:space="preserve">
     <value>Connect Rayshift Account</value>
   </data>
-  <data name="NAArtName" xml:space="preserve">
-    <value>Custom Art (NA)</value>
-  </data>
-  <data name="NAInstaller" xml:space="preserve">
-    <value>FGO NA</value>
-  </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
   </data>
