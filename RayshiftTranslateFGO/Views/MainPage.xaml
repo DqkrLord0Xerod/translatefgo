@@ -15,23 +15,12 @@
             <x:Arguments>
                 <views:InstallerPage>
                     <x:Arguments>
-                        <x:Int32>1
-                        </x:Int32>
+                        <x:Int32>1</x:Int32>
                     </x:Arguments>
                 </views:InstallerPage>
             </x:Arguments>
         </NavigationPage>
-        <NavigationPage Title="{x:Static resources:AppResources.NAInstaller}">
-            <x:Arguments>
-                <views:InstallerPage>
-                    <x:Arguments>
-                        <x:Int32>2
-                        </x:Int32>
-                    </x:Arguments>
-                </views:InstallerPage>
-            </x:Arguments>
-        </NavigationPage>
-        <NavigationPage Title="{x:Static resources:AppResources.CustomArtTab}">
+        <NavigationPage x:Name="ArtNavigationPage" Title="{x:Static resources:AppResources.CustomArtTab}">
             <x:Arguments>
                 <views:ArtPage x:Name="ArtPageRef"/>
             </x:Arguments>

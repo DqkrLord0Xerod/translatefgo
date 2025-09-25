@@ -51,7 +51,7 @@ namespace RayshiftTranslateFGO.Droid
                     return;
                 }
 
-                if (region < 1 || region > 2)
+                if (region != 1)
                 {
                     Log.Warn(TAG, "Invalid region for update request.");
                     return;
@@ -64,16 +64,7 @@ namespace RayshiftTranslateFGO.Droid
                 }
             
 
-                string preferencesKey = "";
-                switch (region)
-                {
-                    case 1:
-                        preferencesKey = $"InstalledScript_{FGORegion.Jp}";
-                        break;
-                    case 2:
-                        preferencesKey = $"InstalledScript_{FGORegion.Na}";
-                        break;
-                }
+                var preferencesKey = $"InstalledScript_{FGORegion.Jp}";
 
                 if (Preferences.Get(preferencesKey, null) == null)
                 {

@@ -1,7 +1,7 @@
 ﻿## Rayshift.io Translate Fate/Grand Order
 [![GitHub Release](https://img.shields.io/github/release/rayshift/translatefgo.svg?style=flat)](https://github.com/rayshift/translatefgo/releases)  [![Github All Releases](https://img.shields.io/github/downloads/rayshift/translatefgo/total.svg?style=flat)](https://github.com/rayshift/translatefgo/releases)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Discord Chat](https://img.shields.io/discord/665980614998097941.svg)](https://discord.gg/6vncnjj)  
 
-This application translates cutscenes in Fate/Grand Order JP & NA into a variety of different languages. It features real time machine translation of the most recent event using [DeepL](https://www.deepl.com/). Older content uses the official translation from the North American region. Teams of translators are working on human translations in various different languages.
+This application translates cutscenes in Fate/Grand Order JP into English. It features real time machine translation of the most recent event using [DeepL](https://www.deepl.com/). Older content uses the official English translations prepared for the global release. Teams of translators are working on human translations for recent story chapters and events.
 
 ### Android 14+ is now fully supported. [Click to download.](https://github.com/rayshift/translatefgo/releases)
 
@@ -14,17 +14,13 @@ If you're able, become a [Patreon](https://www.patreon.com/rayshift) to help sup
 If the text is too fast or slow, you can change text speed in the [game settings](https://i.imgur.com/UhmoZI9.png). (Top = text speed, bottom = scroll speed)
 
 Currently, English translations are available for:
-- Official: Anything the Global/US version of the app has.
+- Official: Anything the Global/US version of the app has released in English.
 - Machine & Edited: Anything not mentioned here
 - Human Main Story: LB6, Tunguska Sanctuary, Traum, LB7, OC1, OC2, OC3, OC4
 - Human Events: Valentines 2022-2024, Xmas 2023, Lilim Harlot Collab, Samurai Remnant Collab, Mahoyo Collab, Summer 2024
 
 #### Languages
-- A Spanish translation for F/GO is also available through this app. Please see https://proyectograndorder.es/ for more information.
-- A Portuguese Brazilian translation is also available.
-- A partial French translation is now available.
-- A partial Indonesian translation is now available.
-- A partial Italian translation is now available.
+This repository now focuses exclusively on delivering English support for the JP client.
 
 ### Installation
 Requirements: Android 7-15+ are supported. Root is not required. Shizuku may be required on some modern devices.
@@ -81,8 +77,6 @@ There are some things you should do before using this app to ensure the safety o
 - Always ensure you download the app from rayshift.io or this GitHub page. Do not trust third party downloads.
 - Create and write down a bind code for your account before using the app.
 
-### Does this work on NA?
-Yes, for all the non-english languages we provide.
 
 ### Contact Information
 This tool operates in good faith to increase player accessibility to Fate/Grand Order. Please use the GitHub issues section for bug reports and suggestions. Should you wish to privately contact the current maintainer of this application, please email webmaster at rayshift.io.

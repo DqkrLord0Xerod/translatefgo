@@ -50,12 +50,10 @@ namespace RayshiftTranslateFGO.Views
         private bool _isLoggedIn { get; set; } = false;
         private bool _isDonor { get; set; } = false;
 
-        public bool NAEnabled { get; set; } = false;
         public bool JPEnabled { get; set; } = false;
 
         // combo of NEW crc + art id + filename, to check if already installed and we can skip
         public List<string> JPFileChecksum { get; set; } = new List<string>();
-        public List<string> NAFileChecksum { get; set; } = new List<string>();
 
         public ArtPage()
         {
@@ -110,31 +108,24 @@ namespace RayshiftTranslateFGO.Views
             RevertButton.Text = AppResources.ArtUninstallingButton;
             try
             {
-                foreach (var region in new[] { FGORegion.Jp, FGORegion.Na })
+                var artUrls = _handshake.Response?.JPArtUrls ?? new List<ArtUrl>();
+
+                await _sm.GetArtAssetStorage(_accessMode,
+                    FGORegion.Jp,
+                    _installedFgoInstances.Where(w => w.Region == FGORegion.Jp).Select(s => s.Path).ToList(),
+                    artUrls.ToList(),
+                    true);
+
+                var removals = artUrls.SelectMany(s => s.Urls).Select(s => s.Filename).ToList();
+                foreach (var game in _installedFgoInstances.Where(w => w.Region == FGORegion.Jp).Select(s => s.Path))
                 {
-                    var artUrls = region == FGORegion.Jp
-                        ? _handshake.Response.JPArtUrls
-                        : _handshake.Response.NAArtUrls;
-
-                    await _sm.GetArtAssetStorage(_accessMode,
-                        region,
-                        _installedFgoInstances.Where(w => w.Region == region).Select(s => s.Path).ToList(),
-                        artUrls.ToList(),
-                        true);
-
-                    var removals = artUrls.SelectMany(s => s.Urls).Select(s => s.Filename).ToList();
-                    foreach (var game in _installedFgoInstances.Where(w => w.Region == region).Select(s => s.Path))
+                    foreach (var file in removals)
                     {
-                        foreach (var file in removals)
-                        {
-                            var path = _accessMode == ContentType.StorageFramework
-                                ? $"files/data/d713/{file}"
-                                : $"{game}/files/data/d713/{file}";
-                            filesToRemove.Add(new KeyValuePair<string, string>(path, game));
-                        }
+                        var path = _accessMode == ContentType.StorageFramework
+                            ? $"files/data/d713/{file}"
+                            : $"{game}/files/data/d713/{file}";
+                        filesToRemove.Add(new KeyValuePair<string, string>(path, game));
                     }
-
-                    
                 }
                 int i = 0;
                 foreach (var file in filesToRemove)
@@ -148,7 +139,6 @@ namespace RayshiftTranslateFGO.Views
 
                 RevertButton.Text = AppResources.UninstallFinished;
                 Preferences.Remove("JPArtChecksums");
-                Preferences.Remove("NAArtChecksums");
                 OnPropertyChanged();
                 await Task.Delay(1000);
             }
@@ -303,13 +293,10 @@ namespace RayshiftTranslateFGO.Views
                     }
                 }
 
-                var instanceDictNA =
-                    _installedFgoInstances.OrderByDescending(o => o.LastModified).FirstOrDefault(w => w.Region == FGORegion.Na);
-
                 var instanceDictJP =
                     _installedFgoInstances.OrderByDescending(o => o.LastModified).FirstOrDefault(w => w.Region == FGORegion.Jp);
 
-                if (instanceDictNA == null && instanceDictJP == null)
+                if (instanceDictJP == null)
                 {
                     LoadingText.Text = String.Format(AppResources.NoFGOInstallationFound2,
                         $"Fate/Grand Order");
@@ -317,14 +304,13 @@ namespace RayshiftTranslateFGO.Views
                     return;
                 }
 
-                NAEnabled = instanceDictNA != null;
                 JPEnabled = instanceDictJP != null;
 
 
                 _guiObjects?.Clear();
                 // GET ART LIST
                 var rest = new RestfulAPI();
-                var handshake = await rest.GetArtAPIResponse(instanceDictJP?.AssetStorage, instanceDictNA?.AssetStorage);
+                var handshake = await rest.GetArtAPIResponse(instanceDictJP?.AssetStorage);
                 _handshake = handshake.Data;
 
                 if (handshake.Data == null || handshake.Data.Status != 200)
@@ -347,36 +333,18 @@ namespace RayshiftTranslateFGO.Views
                     _isDonor = false;
                 }
                 
-                // warn for issues
-                foreach(var region in new [] {FGORegion.Jp, FGORegion.Na})
+                if (JPEnabled)
                 {
+                    var status = handshake.Data.Response.JPAssetStatus;
+                    var artUrls = _handshake.Response.JPArtUrls ?? new List<ArtUrl>();
 
-                    var regionEnabled = region == FGORegion.Jp ? JPEnabled : NAEnabled;
-                    var instanceDict = region == FGORegion.Jp ? instanceDictJP : instanceDictNA;
-                    var status = region == FGORegion.Jp
-                        ? handshake.Data.Response.JPAssetStatus
-                        : handshake.Data.Response.NAAssetStatus;
-                    var artUrls = region == FGORegion.Jp
-                        ? _handshake.Response.JPArtUrls
-                        : _handshake.Response.NAArtUrls;
-
-                    var pref = region == FGORegion.Jp 
-                        ? Preferences.Get("JPArtChecksums", "[]") 
-                        : Preferences.Get("NAArtChecksums", "[]");
-
-                    var checksums = JsonConvert.DeserializeObject<List<string>>(pref);
-                    if (checksums == null)
-                    {
-                        checksums = new List<string>(); 
-                    }
-
-                    if (!regionEnabled) continue; // TODO: Disable region
+                    var pref = Preferences.Get("JPArtChecksums", "[]");
+                    var checksums = JsonConvert.DeserializeObject<List<string>>(pref) ?? new List<string>();
 
                     if (status != HandshakeAssetStatus.Missing &&
                         status != HandshakeAssetStatus.UpToDate)
                     {
-
-                        var warningTitle = AppResources.Warning + $" ({region.ToString().ToUpper()})";
+                        var warningTitle = AppResources.Warning + " (JP)";
                         switch (status)
                         {
                             case HandshakeAssetStatus.UpdateRequired:
@@ -398,44 +366,43 @@ namespace RayshiftTranslateFGO.Views
                         }
                     }
 
-                     // Add gui elements
+                    foreach (var item in artUrls)
+                    {
+                        if (item.IsCurrentlyInstalled && !item.IsNew)
+                        {
+                            if (!item.Urls.TrueForAll(w => checksums.Contains(w.Hash)))
+                            {
+                                item.ToBeInstalled = true;
+                            }
+                        }
+                        else
+                        {
+                            item.ToBeInstalled = true;
+                        }
+                    }
 
-                     foreach (var item in artUrls)
-                     {
-                         if (item.IsCurrentlyInstalled && !item.IsNew)
-                         {
-                             if (!item.Urls.TrueForAll(w => checksums.Contains(w.Hash))) { // for this object, we don't have all checksums
-                                 item.ToBeInstalled = true;
-                             }
-                         }
-                         else
-                         {
-                             item.ToBeInstalled = true;
-                         }
-                     }
+                    var total = artUrls.Count();
+                    var totalStarred = artUrls.Count(c => c.Starred);
+                    var notInstalled = artUrls.Count(c => c.ToBeInstalled);
+                    var notInstalledStarred = artUrls.Count(c => c.ToBeInstalled && c.Starred);
 
-                     var total = artUrls.Count();
-                     var totalStarred = artUrls.Count(c => c.Starred);
-                     var notInstalled = artUrls.Count(c => c.ToBeInstalled);
-                     var notInstalledStarred = artUrls.Count(c => c.ToBeInstalled && c.Starred);
-
-                     var totalSize = artUrls.Where(w => w.ToBeInstalled).Sum(w => w.Size);
-                     var totalSizeStarred = artUrls.Where(w => w.Starred && w.ToBeInstalled).Sum(w => w.Size);
-                     _guiObjects.Add(new ArtGUIObject()
-                     {
-                         BundleHidden = false,
-                         SizeOfInstall = String.Format(AppResources.ArtTotalSize, totalSizeStarred.Bytes().Humanize("#.## MB"), totalSize.Bytes().Humanize("#.## MB")),
-                         Name = region == FGORegion.Jp ? AppResources.JPArtName : AppResources.NAArtName,
-                         Status = String.Format(AppResources.ArtStatus, notInstalledStarred, totalStarred, notInstalled, total),
-                         Install2Enabled = notInstalled > 0,
-                         Install1Enabled = notInstalledStarred > 0,
-                         CanEnable1 = notInstalledStarred > 0,
-                         CanEnable2 = notInstalled > 0,
-                         Install1Click = new Command(async () => await InstallArt(region, artUrls.Where(w => w.Starred && w.ToBeInstalled), 1), () => ButtonsEnabled && notInstalledStarred > 0),
-                         Install2Click = new Command(async () => await InstallArt(region, artUrls.Where(w=>w.ToBeInstalled), 2), ()=>ButtonsEnabled && notInstalled > 0),
-                         Region = region,
-                         TextColor = Color.Default
-                });
+                    var totalSize = artUrls.Where(w => w.ToBeInstalled).Sum(w => w.Size);
+                    var totalSizeStarred = artUrls.Where(w => w.Starred && w.ToBeInstalled).Sum(w => w.Size);
+                    _guiObjects.Add(new ArtGUIObject()
+                    {
+                        BundleHidden = false,
+                        SizeOfInstall = String.Format(AppResources.ArtTotalSize, totalSizeStarred.Bytes().Humanize("#.## MB"), totalSize.Bytes().Humanize("#.## MB")),
+                        Name = AppResources.JPArtName,
+                        Status = String.Format(AppResources.ArtStatus, notInstalledStarred, totalStarred, notInstalled, total),
+                        Install2Enabled = notInstalled > 0,
+                        Install1Enabled = notInstalledStarred > 0,
+                        CanEnable1 = notInstalledStarred > 0,
+                        CanEnable2 = notInstalled > 0,
+                        Install1Click = new Command(async () => await InstallArt(FGORegion.Jp, artUrls.Where(w => w.Starred && w.ToBeInstalled), 1), () => ButtonsEnabled && notInstalledStarred > 0),
+                        Install2Click = new Command(async () => await InstallArt(FGORegion.Jp, artUrls.Where(w=>w.ToBeInstalled), 2), ()=>ButtonsEnabled && notInstalled > 0),
+                        Region = FGORegion.Jp,
+                        TextColor = Color.Default
+                    });
                 }
                 ArtListView.ItemsSource = _guiObjects;
 

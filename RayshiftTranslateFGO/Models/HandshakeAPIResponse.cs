@@ -55,9 +55,7 @@ namespace RayshiftTranslateFGO.Models
     {
         public string AppVer { get; set; }
         public HandshakeAssetStatus JPAssetStatus { get; set; } = HandshakeAssetStatus.Missing;
-        public HandshakeAssetStatus NAAssetStatus { get; set; } = HandshakeAssetStatus.Missing;
         public LinkedUserInfo AccountStatus { get; set; }
-        public List<ArtUrl> NAArtUrls { get; set; }
         public List<ArtUrl> JPArtUrls { get; set; }
     }
 

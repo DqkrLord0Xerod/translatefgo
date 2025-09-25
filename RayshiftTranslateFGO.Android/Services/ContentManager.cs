@@ -478,15 +478,11 @@ namespace RayshiftTranslateFGO.Droid
                                         foreach(var validAppName in AppNames.ValidAppNames) {
                                             if (foundDirectory.Split("/").Last() == validAppName)
                                             {
-                                                var region = foundDirectory.EndsWith(".en")
-                                                    ? FGORegion.Na
-                                                    : FGORegion.Jp;
-                                                
-                                                apps.Add(new InstalledFGOInstances()
-                                                {
-                                                    Path = foundDirectory,
-                                                    Region = region
-                                                });
+                                                  apps.Add(new InstalledFGOInstances()
+                                                  {
+                                                      Path = foundDirectory,
+                                                      Region = FGORegion.Jp
+                                                  });
                                             }
                                         }
                                     }
@@ -513,15 +509,11 @@ namespace RayshiftTranslateFGO.Droid
                                 var childrenFolders = this.GetFolderChildren(Android.Net.Uri.Parse(location.Value), "");
                                 if (childrenFolders.Count == 0) continue; // app uninstalled
 
-                                var region = package.EndsWith(".en")
-                                    ? FGORegion.Na
-                                    : FGORegion.Jp;
-
-                                apps.Add(new InstalledFGOInstances()
-                                {
-                                    Path = location.Value,
-                                    Region = region
-                                });
+                                  apps.Add(new InstalledFGOInstances()
+                                  {
+                                      Path = location.Value,
+                                      Region = FGORegion.Jp
+                                  });
                             }
                         }
                     }
@@ -570,15 +562,11 @@ namespace RayshiftTranslateFGO.Droid
                                         {
                                             if (foundDirectory.Split("/").Last() == validAppName)
                                             {
-                                                var region = foundDirectory.EndsWith(".en")
-                                                    ? FGORegion.Na
-                                                    : FGORegion.Jp;
-
-                                                apps.Add(new InstalledFGOInstances()
-                                                {
-                                                    Path = foundDirectory,
-                                                    Region = region
-                                                });
+                                                  apps.Add(new InstalledFGOInstances()
+                                                  {
+                                                      Path = foundDirectory,
+                                                      Region = FGORegion.Jp
+                                                  });
                                             }
                                         }
                                     }
@@ -621,17 +609,13 @@ namespace RayshiftTranslateFGO.Droid
                                     NGFSError error = new NGFSError();
                                     var contents = MainActivity.NextGenFS.ListDirectoryContents(manualCheck, error);
 
-                                    var region = validAppName.EndsWith(".en")
-                                        ? FGORegion.Na
-                                        : FGORegion.Jp;
-
-                                    if (error.IsSuccess && contents != null && contents.Length > 0 && apps.Count(w => w.Path.TrimEnd('/') == manualCheck.TrimEnd('/')) == 0)
-                                    {
-                                        apps.Add(new InstalledFGOInstances()
-                                        {
-                                            Path = manualCheck,
-                                            Region = region
-                                        });
+                                      if (error.IsSuccess && contents != null && contents.Length > 0 && apps.Count(w => w.Path.TrimEnd('/') == manualCheck.TrimEnd('/')) == 0)
+                                      {
+                                          apps.Add(new InstalledFGOInstances()
+                                          {
+                                              Path = manualCheck,
+                                              Region = FGORegion.Jp
+                                          });
                                     }
                                 }
                                 else

@@ -111,7 +111,6 @@ namespace RayshiftTranslateFGO.Services
     public enum FGORegion
     {
         Jp = 0x1,
-        Na = 0x2,
         Debug = 0x4
     }
 }

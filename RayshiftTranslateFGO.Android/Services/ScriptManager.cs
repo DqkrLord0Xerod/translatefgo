@@ -261,7 +261,7 @@ namespace RayshiftTranslateFGO.Droid
             }
 
             // Write checksum cache
-            var prefKey = region == FGORegion.Jp ? "JPArtChecksums" : "NAArtChecksums";
+            var prefKey = "JPArtChecksums";
             var chkPref = Preferences.Get(prefKey, "[]");
 
             var checksums = JsonConvert.DeserializeObject<List<string>>(chkPref);
