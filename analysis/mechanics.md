@@ -2,16 +2,26 @@
 
 ## License Attribution
 - The repository distributes the application under the MIT License and requires retention of the copyright notice and permission statement in derivative works (`LICENCE.txt`).
-- The README reiterates the MIT license for the app and clarifies that bundle creation, translation, and API code are private while the installer is open source (`README.md`).
+- The README reiterates the MIT licensing for the installer code and clarifies that bundle creation, translation, and API services remain private while the public app only handles installation (`README.md`).
 
-## Core Components Overview
-- `RayshiftTranslateFGO/Views/InstallerPage.xaml.cs` drives the translation installer UI, negotiates filesystem mode, performs handshake requests, and orchestrates install/update/uninstall actions.
-- `RayshiftTranslateFGO.Android/Services/ContentManager.cs` implements filesystem access strategies for direct storage, Storage Access Framework (SAF), and Shizuku/NextGenFS, including file discovery, read/write/delete helpers, and detection of installed game directories.
-- `RayshiftTranslateFGO.Android/Services/ScriptManager.cs` encapsulates bundle installation logic: refreshing handshakes, downloading archives, validating checksums, updating `assetstorage.txt`, and writing or removing files via `ContentManager`.
-- `RayshiftTranslateFGO/Services/RestfulAPI.cs` provides the network API client used for handshake metadata, bundle downloads, asset list refreshes, and telemetry callbacks.
-- `RayshiftTranslateFGO.Android/Services/IntentService.cs` manages SAF intents, MediaProjection/storage prompts, and Shizuku binding/permission flows that gate filesystem operations.
-- `RayshiftTranslateFGO/Util/AppNames.cs` defines valid package identifiers used when scanning storage to ensure only known JP client directories are targeted.
-- `RayshiftTranslateFGO/Views/PreInitializePage.xaml.cs` and related onboarding views collect SAF permissions, Shizuku opt-ins, and cached storage URIs before the installer runs.
+## Code Location Map
+| Concern | Primary Files |
+| --- | --- |
+| Installer UI orchestration, handshake workflow, and bundle status rendering | `RayshiftTranslateFGO/Views/InstallerPage.xaml.cs`
+| Filesystem access for Direct, SAF, and Shizuku modes plus game discovery helpers | `RayshiftTranslateFGO.Android/Services/ContentManager.cs`
+| Script download, checksum verification, assetstorage maintenance, and file writes | `RayshiftTranslateFGO.Android/Services/ScriptManager.cs`
+| REST client used for handshake metadata, file downloads, telemetry, and asset list refresh | `RayshiftTranslateFGO/Services/RestfulAPI.cs`
+| SAF/Shizuku permission prompts, binder binding, and system intent helpers | `RayshiftTranslateFGO.Android/Services/IntentService.cs`
+| Shizuku NextGenFS bindings for privileged filesystem operations | `RayshiftTranslateFGO.NextGenFS/Additions/NextGenFS.cs`
+| Onboarding that captures SAF tree URIs, Shizuku opt-in, and caches storage metadata | `RayshiftTranslateFGO/Views/PreInitializePage.xaml.cs`
+| Background auto-update worker that reuses install routines | `RayshiftTranslateFGO.Android/RayshiftTranslationUpdateWorker.cs`
+| Valid JP client identifiers used during storage scanning | `RayshiftTranslateFGO/Util/AppNames.cs`
+
+## Data Location Detection & Permissions
+- During onboarding, the pre-initialization flow triggers SAF tree pickers or Shizuku permission requests, then persists selected document URIs and flags via `Preferences` for later use (`RayshiftTranslateFGO/Views/PreInitializePage.xaml.cs`, `RayshiftTranslateFGO.Android/Services/IntentService.cs`).
+- When the installer view refreshes, it reloads cached storage URIs and Shizuku toggles from `Preferences`, clears cached directory metadata, and determines the active filesystem mode by probing direct access first and falling back to user-selected Shizuku or SAF modes (`RayshiftTranslateFGO/Views/InstallerPage.xaml.cs`, `RayshiftTranslateFGO.Android/Services/ContentManager.cs`).
+- Game discovery enumerates each accessible root depending on the mode: direct filesystem scanning walks `Android/data` subdirectories, SAF mode queries `DocumentFile` children, and Shizuku mode lists directories through NextGenFS binder calls; each candidate is validated against the known JP package list before being recorded as an install target (`RayshiftTranslateFGO.Android/Services/ContentManager.cs`, `RayshiftTranslateFGO/Util/AppNames.cs`).
+- Asset availability checks fetch `assetstorage.txt` via the selected mode and capture timestamps to choose the freshest install path; permission failures trigger onboarding redirects or Shizuku setup messaging within the installer view (`RayshiftTranslateFGO/Views/InstallerPage.xaml.cs`, `RayshiftTranslateFGO.Android/Services/ContentManager.cs`).
 
 ## Sequence Diagrams
 
@@ -22,7 +32,7 @@ sequenceDiagram
     participant Pref as Xamarin.Essentials.Preferences
     participant CM as ContentManager.cs
     participant INT as IntentService.cs
-    UI->>Pref: Load saved SAF tree URIs / Shizuku toggle
+    UI->>Pref: Load SAF tree URIs & Shizuku toggle
     UI->>CM: CheckBasicAccess()
     alt Direct access succeeds
         UI->>UI: Set mode = DirectAccess
@@ -43,25 +53,6 @@ sequenceDiagram
     end
 ```
 
-### Update (Translation List Refresh)
-```mermaid
-sequenceDiagram
-    participant UI as InstallerPage.xaml.cs
-    participant Pref as Xamarin.Essentials.Preferences
-    participant CM as ContentManager.cs
-    participant REST as RestfulAPI.cs
-    UI->>Pref: Load cached storage locations & login tokens
-    UI->>CM: GetInstalledGameApps(mode, storageLocations)
-    CM-->>UI: Installed JP client paths with last-modified metadata
-    loop For each detected install
-        UI->>CM: GetFileContents(mode, assetstorage.txt)
-        CM-->>UI: Base64 assetstorage payload + timestamp
-    end
-    UI->>REST: GetHandshakeApiResponse(region, assetStorage, device info)
-    REST-->>UI: Translation list, bundle status, donor flags
-    UI->>UI: Update GUI bindings & schedule, cache metadata
-```
-
 ### Installation Flow
 ```mermaid
 sequenceDiagram
@@ -75,17 +66,17 @@ sequenceDiagram
     alt User confirms
         UI->>SM: InstallScript(mode, region, installPaths, bundleId)
         SM->>REST: GetHandshakeApiResponse(region, assetstorage snapshot)
-        REST-->>SM: Bundle metadata & file list
-        SM->>REST: GetScript(downloadUrl) for each payload
+        REST-->>SM: Bundle metadata & donor flags
+        SM->>REST: GetScript(downloadUrl) for each asset
         REST-->>SM: Script bytes
-        SM->>SM: Verify checksums & stage file writes
-        opt Extra asset updates required
+        SM->>SM: Verify hashes, stage writes, prep assetstorage updates
+        opt Extra-stage assets required
             SM->>REST: SendAssetList(base64 assetstorage, svtIds)
             REST-->>SM: Updated assetstorage blob
         end
-        SM->>CM: RemoveFileIfExists(mode, original scripts)
-        SM->>CM: WriteFileContents(mode, translated scripts & assetstorage)
-        SM-->>UI: ScriptInstallStatus(success, metrics)
+        SM->>CM: RemoveFileIfExists(mode, original files)
+        SM->>CM: WriteFileContents(mode, translated payloads)
+        SM-->>UI: ScriptInstallStatus(success, message)
         UI->>REST: SendSuccess telemetry (async)
         UI->>UI: Refresh translation list
     else User cancels
@@ -103,27 +94,40 @@ sequenceDiagram
     User->>UI: Tap Uninstall
     UI->>User: Confirmation dialog
     alt User confirms
-        UI->>Pref: Load cached manifest & purge extras
-        UI->>UI: Enumerate installed bundle file paths
+        UI->>Pref: Load InstalledScript_* manifest & extras
+        UI->>UI: Enumerate bundle file list (scripts + extras)
         loop Files to remove
-            UI->>CM: RemoveFileIfExists(mode, filePath)
-            CM-->>UI: Deletion result
+            UI->>CM: RemoveFileIfExists(mode, path)
+            CM-->>UI: Deletion status
         end
         UI->>Pref: Clear InstalledScript_* and UninstallPurgesExtras_* keys
-        UI->>UI: Update status & refresh list
+        UI->>UI: Update status and refresh list
     else User cancels
         UI->>UI: Abort uninstall
     end
 ```
 
-## Data Location Detection & Permissions
-- Direct filesystem mode enumerates each external storage root, walks parent directories, and collects folders whose final segment matches `AppNames.ValidAppNames` (`RayshiftTranslateFGO.Android/Services/ContentManager.cs`).
-- SAF mode stores tree URIs collected during onboarding and queries `DocumentFile` children before matching against valid package names; missing permissions trigger prompts via `IntentService` (`RayshiftTranslateFGO.Android/Services/ContentManager.cs`, `RayshiftTranslateFGO.Android/Services/IntentService.cs`).
-- Shizuku mode lists directories using NextGenFS bindings exposed by the Android project and requires binder permission checks plus listener setup (`RayshiftTranslateFGO.Android/Services/ContentManager.cs`, `RayshiftTranslateFGO.Android/Services/IntentService.cs`, `RayshiftTranslateFGO.Android/MainActivity.cs`).
-- Onboarding pages (`RayshiftTranslateFGO/Views/PreInitializePage.xaml.cs`) prompt the user to choose SAF locations, enable Shizuku if desired, and persist selections for installer use.
+### Update Flow
+```mermaid
+sequenceDiagram
+    participant UI as InstallerPage.xaml.cs
+    participant Pref as Xamarin.Essentials.Preferences
+    participant CM as ContentManager.cs
+    participant REST as RestfulAPI.cs
+    UI->>Pref: Load storage URIs, login tokens, installed bundle cache
+    UI->>CM: GetInstalledGameApps(mode, storageLocations)
+    CM-->>UI: JP client paths + timestamps
+    loop Each detected install
+        UI->>CM: GetFileContents(mode, assetstorage.txt)
+        CM-->>UI: Base64 assetstorage + last modified
+    end
+    UI->>REST: GetHandshakeApiResponse(region, assetstorage)
+    REST-->>UI: Translation groups, status flags, announcements
+    UI->>UI: Update GUI, release schedule, donor state, cached metadata
+```
 
 ## Update & Error Handling
-- Asset status flags returned during the handshake (missing, out-of-date, donor-locked) gate installation actions and trigger user-visible warnings before proceeding (`RayshiftTranslateFGO/Views/InstallerPage.xaml.cs`).
-- Installation failures such as permission errors, checksum mismatches, or API failures short-circuit with descriptive error strings propagated back to the UI (`RayshiftTranslateFGO.Android/Services/ScriptManager.cs`).
-- `ContentManager` centralizes filesystem error handling for all access modes and surfaces status codes that drive retry prompts or onboarding redirects (`RayshiftTranslateFGO.Android/Services/ContentManager.cs`).
-- The README documents user-facing troubleshooting guidance for storage errors (e.g., switching between SAF and Shizuku) and outlines update expectations (`README.md`).
+- The installer surfaces handshake asset status warnings (missing, update required, time-traveler, corrupt) before allowing installs, matching the README guidance on keeping the game patched (`RayshiftTranslateFGO/Views/InstallerPage.xaml.cs`, `README.md`).
+- Automatic updates reuse the script manager to reinstall the last known bundle when background workers trigger, falling back to telemetry logging if failures occur (`RayshiftTranslateFGO.Android/RayshiftTranslationUpdateWorker.cs`).
+- Permissions or checksum failures raise descriptive alerts, optionally redirecting users back to storage setup or Shizuku onboarding when `ContentManager` encounters blocked paths (`RayshiftTranslateFGO/Views/InstallerPage.xaml.cs`, `RayshiftTranslateFGO.Android/Services/ContentManager.cs`).
+- User-facing troubleshooting advice encourages switching filesystem modes (SAF vs Shizuku), reinstalling, or verifying connectivity, aligning with the README’s support section (`README.md`).
